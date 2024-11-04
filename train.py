@@ -1,3 +1,5 @@
+import argparse
+
 import joblib
 import pandas as pd
 from sklearn.linear_model import LinearRegression
@@ -19,6 +21,7 @@ def train_single_region(df, location):
     #features = ['rainfall', 'mean_temperature', 'last_rainfall', 'last_disease_cases']
     features = ['rainfall', 'mean_temperature']
     X = df[features]
+    df['disease_cases'] = df['disease_cases'].fillna(0)  # set NaNs to zero (not a good solution, just for the example to work)
     Y = df['disease_cases']
     # X['last_rainfall'] = df['rainfall'].shift(1)
     # X['last_disease_cases'] = df['disease_cases'].shift(1)
@@ -29,12 +32,20 @@ def train_single_region(df, location):
     Y = cut_top_rows(Y, 1)
 
     model = LinearRegression()
+    print(X)
     model.fit(X, Y)
     # model.last_disease_cases = Y.iloc[-1]
     # model.last_rainfall = X['rainfall'].iloc[-1]
     print(f"Train - model coefficients for location {location}: ", list(zip(features, model.coef_)))
     return model
 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Train a minimalist forecasting model.')
+
+    parser.add_argument('csv_fn', type=str, help='Path to the CSV file containing input data.')
+    parser.add_argument('model_fn', type=str, help='Path to save the trained model.')
+    args = parser.parse_args()
+    train(args.csv_fn, args.model_fn)
 
 
 
